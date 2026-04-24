@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Delmata Travel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Light golden-hour tones (sun high) */
+    --sky-1: #f6e2c6;
+    --sky-2: #efc8a6;
+    --sky-3: #e6a382;
+    --horizon: #cf8a6f;
+    --sea-1: #1d5b6a;
+    --sea-2: #0f3d4c;
+    --sea-3: #0a2a36;
+    --sea-4: #061a24;
+    --sun: #ffe9b8;
+    --sun-2: #ffcf8e;
+    --cream: #f7ecd6;
+    --ink: #1a2330;
+    --sun-y: 40%; /* controlled by JS via CSS var */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#04141c;overflow:hidden;color:var(--cream);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+
+  .stage{
+    position:fixed; inset:0; overflow:hidden;
+    background:
+      linear-gradient(180deg,
+        var(--sky-1) 0%,
+        var(--sky-2) 22%,
+        var(--sky-3) 42%,
+        var(--horizon) 55%,
+        var(--sea-1) 55.3%,
+        var(--sea-2) 68%,
+        var(--sea-3) 84%,
+        var(--sea-4) 100%);
+    transition: background 0.9s ease-out;
+  }
+
+  .haze{
+    position:absolute; left:-10%; right:-10%; top:48%; height:20%;
+    background:linear-gradient(180deg, transparent, rgba(255,210,170,.38) 45%, rgba(255,190,150,0));
+    filter:blur(22px); pointer-events:none;
+    transition: opacity .9s ease;
+  }
+
+  /* ——— SUN ——— */
+  .sun{
+    position:absolute; left:50%; top:var(--sun-y);
+    width:min(30vmin,340px); aspect-ratio:1;
+    transform:translate(-50%,-50%); pointer-events:none;
+    transition: top 0.9s cubic-bezier(.3,.7,.3,1);
+  }
+  .sun .halo{
+    position:absolute; inset:-80%;
+    background:radial-gradient(circle, rgba(255,225,180,.6) 0%, rgba(255,200,150,.22) 28%, rgba(255,190,140,0) 62%);
+    animation: breathe 9s ease-in-out infinite;
+  }
+  .sun .disc{
+    position:absolute; inset:22%; border-radius:50%;
+    background:radial-gradient(circle at 50% 45%, #fff4d6 0%, var(--sun) 45%, var(--sun-2) 80%, rgba(255,207,142,0) 100%);
+    box-shadow: 0 0 100px 22px rgba(255,220,170,.5);
+  }
+  @keyframes breathe{
+    0%,100%{opacity:.92; transform:scale(1)}
+    50%    {opacity:1;   transform:scale(1.05)}
+  }
+
+  /* ——— FISHING BOAT ——— */
+  .boat{
+    position:absolute; left:14%; bottom:9%;
+    width:clamp(180px, 20vw, 280px);
+    z-index:3;
+    transform-origin: 50% 85%;
+    animation: boatBob 5.6s ease-in-out infinite, boatDrift 150s ease-in-out infinite alternate;
+    filter: drop-shadow(0 10px 14px rgba(0,10,16,.55));
+  }
+  .boat svg{display:block;width:100%;height:auto}
+  @keyframes boatBob{
+    0%,100%{transform:translateY(0) rotate(-1.2deg)}
+    50%    {transform:translateY(-3px) rotate(1.2deg)}
+  }
+  @keyframes boatDrift{
+    0%   { left: 10%; }
+    100% { left: 24%; }
+  }
+
+  /* high clouds */
+  .clouds{position:absolute;inset:0;pointer-events:none;opacity:.55}
+  .cloud{position:absolute; height:2px; border-radius:999px;
+    background:linear-gradient(90deg, transparent, rgba(255,240,215,.9), transparent);
+    filter:blur(.6px);}
+  .c1{top:14%; width:36%; left:-36%; animation: drift 110s linear infinite}
+  .c2{top:22%; width:22%; left:-22%; height:1.5px; animation: drift 140s linear infinite 10s}
+  .c3{top:8%;  width:44%; left:-44%; height:2.5px; opacity:.6; animation: drift 170s linear infinite 22s}
+  .c4{top:28%; width:16%; left:-16%; animation: drift 95s  linear infinite 40s}
+  @keyframes drift{ to{ left:120%; } }
+
+  /* birds */
+  .birds{position:absolute;inset:0;pointer-events:none;opacity:.55}
+  .bird{position:absolute;color:#2a1a14;width:18px;height:8px}
+  .bird svg{width:100%;height:100%;display:block}
+  .b1{top:26%;left:-5%; animation: flyAcross 56s linear infinite}
+  .b2{top:22%;left:-5%; animation: flyAcross 72s linear infinite 8s; transform:scale(.7)}
+  .b3{top:30%;left:-5%; animation: flyAcross 64s linear infinite 22s; transform:scale(.85)}
+  .b4{top:18%;left:-5%; animation: flyAcross 90s linear infinite 40s; transform:scale(.6)}
+  @keyframes flyAcross{
+    0%  {left:-5%;  top: 40%;}
+    25% {           top: 20%;}
+    50% {           top: 26%;}
+    75% {           top: 18%;}
+    100%{left:110%; top: 32%;}
+  }
+  .flap{animation:flap .6s ease-in-out infinite alternate; transform-origin:center}
+  @keyframes flap{ from{transform:scaleY(1)} to{transform:scaleY(.4)} }
+
+  .islands{position:absolute;left:-4%;right:-4%;top:52%;height:6%;pointer-events:none}
+  .islands svg{position:absolute;left:0;width:100%;height:100%;display:block}
+  .isl-far { opacity:.45; filter:blur(.4px); transform:translateY(-20%)}
+  .isl-near{ opacity:.78; transform:translateY(25%)}
+
+  .shaft{
+    position:absolute; left:50%; top:55.3%; transform:translateX(-50%);
+    width:20vmin; bottom:0;
+    background:linear-gradient(180deg,
+      rgba(255,225,170,.9) 0%, rgba(255,205,150,.32) 18%,
+      rgba(255,190,140,.1) 45%, rgba(255,190,140,0) 100%);
+    filter:blur(12px); mix-blend-mode:screen; pointer-events:none;
+    animation: shaft 7s ease-in-out infinite;
+    transition: opacity .9s ease;
+  }
+  @keyframes shaft{
+    0%,100%{opacity:.85; transform:translateX(-50%) scaleX(1)}
+    50%    {opacity:1;    transform:translateX(-50%) scaleX(1.1)}
+  }
+
+  #sea{
+    position:absolute; left:0; right:0; top:55.3%; bottom:0;
+    width:100%; height:44.7%; display:block;
+  }
+  #dolphins{
+    position:absolute; left:0; right:0; top:50%; bottom:0;
+    width:100%; height:50%; display:block; pointer-events:none;
+  }
+
+  .specks{position:absolute;left:0;right:0;top:55.3%;bottom:0;pointer-events:none;overflow:hidden}
+  .spk{position:absolute; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,230,180,1) 0%, rgba(255,230,180,0) 70%);
+    opacity:0;}
+
+  .motes{position:absolute;inset:0;pointer-events:none}
+  .mote{position:absolute;width:3px;height:3px;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,235,200,.9), rgba(255,235,200,0) 70%);
+    opacity:0;
+    animation: floaty 14s ease-in-out infinite;
+  }
+  @keyframes floaty{
+    0%{opacity:0; transform:translateY(0) translateX(0)}
+    30%{opacity:.8} 70%{opacity:.6}
+    100%{opacity:0; transform:translateY(-60px) translateX(30px)}
+  }
+
+  .vignette{
+    position:absolute;inset:0;pointer-events:none;z-index:40;
+    background:radial-gradient(ellipse at 50% 42%, transparent 45%, rgba(8,22,32,.55) 100%);
+  }
+  .grain{
+    position:absolute;inset:0;pointer-events:none;z-index:45;opacity:.07;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .7 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  /* ——— CHROME ——— */
+  .chrome{ position:absolute; inset:0; z-index:50;
+    padding: clamp(28px, 4vw, 56px) clamp(28px, 5vw, 72px) clamp(74px, 6vw, 96px);}
+  .top{
+    position:absolute; top: clamp(28px, 4vw, 56px); left: clamp(28px, 5vw, 72px);
+    max-width:min(560px, 70vw);
+  }
+  .brand{ display:flex; align-items:center; gap:14px;
+    animation: fadeUp 1.6s cubic-bezier(.2,.7,.2,1) both;}
+  .mark{ width:38px; height:38px; border-radius:50%;
+    border:1px solid rgba(247,236,214,.7);
+    display:grid; place-items:center;
+    font-family:"Cormorant Garamond", serif;
+    font-style:italic; font-weight:400; font-size:20px; color:var(--cream);
+    box-shadow: 0 0 0 1px rgba(247,236,214,.15) inset;}
+  .wordmark{ font-family:"Cormorant Garamond", serif; font-weight:400;
+    letter-spacing:.34em; font-size:13px; text-transform:uppercase;
+    color:var(--cream); padding-top:3px;}
+
+  .message{ margin-top: clamp(40px, 6vw, 72px); max-width:560px;
+    animation: fadeUp 1.8s cubic-bezier(.2,.7,.2,1) .15s both;}
+  .eyebrow{ font-size:10px; letter-spacing:.5em; text-transform:uppercase;
+    color:rgba(247,236,214,.7); font-weight:500;
+    display:inline-flex; align-items:center; gap:12px; margin-bottom:18px;}
+  .eyebrow::before{content:""; width:28px; height:1px; background:rgba(247,236,214,.55)}
+  .headline{ font-family:"Cormorant Garamond", serif; font-weight:300;
+    font-size:clamp(34px, 4.8vw, 62px); line-height:1.02;
+    letter-spacing:-.012em; color:var(--cream);
+    text-shadow: 0 2px 30px rgba(0,20,30,.35);}
+  .headline em{ font-style:italic; color:#ffe1bd; font-weight:300;}
+  .sub{ margin-top:18px; font-size:13.5px; line-height:1.7;
+    color:rgba(247,236,214,.78); font-weight:300; max-width:44ch;}
+
+  .since{ margin-top:22px; display:inline-flex; align-items:center; gap:14px;
+    padding:10px 16px 10px 14px;
+    border:1px solid rgba(247,236,214,.18);
+    background: linear-gradient(180deg, rgba(247,236,214,.06), rgba(247,236,214,.02));
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    border-radius:2px;
+    font-size:10.5px; letter-spacing:.32em; text-transform:uppercase;
+    color:rgba(247,236,214,.82);}
+  .since .pulse{ width:7px; height:7px; border-radius:50%;
+    background:#ffd58e;
+    box-shadow: 0 0 0 0 rgba(255,213,142,.6);
+    animation: pulse 2.6s ease-out infinite;}
+  .since .k{ color:rgba(247,236,214,.5) }
+  .since .v{ font-family:"Cormorant Garamond", serif; font-style:italic;
+    font-size:14.5px; letter-spacing:.04em; text-transform:none; color:#ffe1bd;}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(255,213,142,.55)}
+    70%{box-shadow:0 0 0 12px rgba(255,213,142,0)}
+    100%{box-shadow:0 0 0 0 rgba(255,213,142,0)}
+  }
+
+  .contact{ position:absolute; right: clamp(28px, 5vw, 72px);
+    bottom: clamp(96px, 8vw, 120px); text-align:right; z-index:51;
+    animation: fadeUp 1.8s cubic-bezier(.2,.7,.2,1) .3s both;}
+  .contact .label{ font-size:10px; letter-spacing:.5em; text-transform:uppercase;
+    color:rgba(247,236,214,.7); font-weight:500;
+    display:inline-flex; align-items:center; gap:12px; margin-bottom:14px;}
+  .contact .label::after{content:""; width:28px; height:1px; background:rgba(247,236,214,.55)}
+  .contact a{ display:block; color:var(--cream); text-decoration:none;
+    font-family:"Cormorant Garamond", serif;
+    font-size:clamp(18px, 1.7vw, 22px); font-weight:400;
+    letter-spacing:.01em; padding:4px 0; position:relative;
+    transition: color .5s ease;}
+  .contact a:hover{ color:#ffe1bd; }
+  .contact a::after{
+    content:""; position:absolute; right:0; bottom:0; width:0; height:1px;
+    background:rgba(255,225,189,.8);
+    transition: width .6s cubic-bezier(.2,.7,.2,1);}
+  .contact a:hover::after{ width:100%; }
+
+  .legal{ position:absolute; left:0; right:0; bottom:0; z-index:52;
+    padding: 18px clamp(28px, 5vw, 72px);
+    display:flex; justify-content:space-between; align-items:center; gap:24px;
+    font-size:10.5px; letter-spacing:.22em; text-transform:uppercase;
+    color:rgba(247,236,214,.55); font-weight:400;
+    border-top:1px solid rgba(247,236,214,.12);
+    backdrop-filter: blur(2px);
+    animation: fadeUp 2s ease .6s both;}
+  .legal .row{ display:flex; gap:clamp(12px, 2vw, 28px); flex-wrap:wrap; }
+  .legal .dot{ width:3px; height:3px; border-radius:50%; background:rgba(247,236,214,.4); display:inline-block; margin-right:10px; vertical-align:middle;}
+  .legal span.k{ color:rgba(247,236,214,.4); }
+
+  @keyframes fadeUp{
+    from{opacity:0; transform:translateY(10px); filter:blur(4px)}
+    to  {opacity:1; transform:none; filter:none}
+  }
+  .fadein{ animation: fadeSoft 2.4s ease .2s both; }
+  @keyframes fadeSoft{ from{opacity:0} to{opacity:1} }
+
+  @media (max-width: 720px){
+    .chrome{ padding: 24px 22px 110px; }
+    .top{ position:static; max-width:none; }
+    .contact{ position:static; text-align:left; margin-top:26px; }
+    .contact .label::after{ display:none; }
+    .message{ max-width:none; margin-top:28px; }
+    .legal{ font-size:9.5px; letter-spacing:.18em; padding:14px 22px; flex-direction:column; align-items:flex-start; gap:6px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+  <main class="stage" id="stage">
+
+    <div class="sun fadein" aria-hidden="true">
+      <div class="halo"></div>
+      <div class="disc"></div>
+    </div>
+
+    <div class="clouds fadein" aria-hidden="true">
+      <div class="cloud c1"></div><div class="cloud c2"></div>
+      <div class="cloud c3"></div><div class="cloud c4"></div>
+    </div>
+
+    <div class="birds fadein" aria-hidden="true">
+      <div class="bird b1"><svg viewBox="0 0 40 14"><path class="flap" d="M1 9 Q 10 1 20 8 Q 30 1 39 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <div class="bird b2"><svg viewBox="0 0 40 14"><path class="flap" d="M1 9 Q 10 1 20 8 Q 30 1 39 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <div class="bird b3"><svg viewBox="0 0 40 14"><path class="flap" d="M1 9 Q 10 1 20 8 Q 30 1 39 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <div class="bird b4"><svg viewBox="0 0 40 14"><path class="flap" d="M1 9 Q 10 1 20 8 Q 30 1 39 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+    </div>
+
+    <div class="haze fadein" aria-hidden="true"></div>
+
+    <div class="islands fadein" aria-hidden="true">
+      <svg class="isl-far" viewBox="0 0 1600 40" preserveAspectRatio="none">
+        <path d="M0 40 L0 28 Q 120 22 220 26 Q 340 18 460 24 Q 600 30 740 22 Q 880 16 1020 24 Q 1160 32 1300 24 Q 1440 18 1600 26 L1600 40 Z" fill="#6a5972"/>
+      </svg>
+      <svg class="isl-near" viewBox="0 0 1600 40" preserveAspectRatio="none">
+        <path d="M0 40 L0 30 Q 140 22 280 28 Q 420 34 580 24 Q 740 16 900 28 Q 1060 38 1220 26 Q 1380 16 1540 28 Q 1580 30 1600 29 L1600 40 Z" fill="#3a3a52"/>
+      </svg>
+    </div>
+
+    <div class="shaft fadein" aria-hidden="true"></div>
+
+    <canvas id="sea" aria-hidden="true"></canvas>
+    <canvas id="dolphins" aria-hidden="true"></canvas>
+
+    <!-- ========= FISHING BOAT ========= -->
+    <div class="boat" aria-hidden="true">
+      <svg viewBox="0 0 280 160">
+        <defs>
+          <linearGradient id="hullMain" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0"   stop-color="#3d2a1c"/>
+            <stop offset="0.5" stop-color="#241812"/>
+            <stop offset="1"   stop-color="#0f0806"/>
+          </linearGradient>
+          <linearGradient id="stripe" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#d76a3a"/>
+            <stop offset="1" stop-color="#8b3820"/>
+          </linearGradient>
+          <linearGradient id="cabin" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f4e3c3"/>
+            <stop offset="1" stop-color="#c6a87f"/>
+          </linearGradient>
+          <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#6a3221"/>
+            <stop offset="1" stop-color="#3a1a12"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Reflection -->
+        <ellipse cx="140" cy="145" rx="120" ry="5"   fill="#000" opacity=".45"/>
+        <ellipse cx="140" cy="148" rx="100" ry="2.5" fill="#ffe1bd" opacity=".18"/>
+        <ellipse cx="140" cy="151" rx="70"  ry="1.5" fill="#ffe1bd" opacity=".12"/>
+
+        <!-- HULL — wooden fishing-boat silhouette with raised bow -->
+        <path d="M10 112
+                 Q 18 98 40 96
+                 L 260 98
+                 Q 274 99 272 108
+                 L 268 118
+                 Q 250 134 140 140
+                 Q 40 136 14 122 Z"
+              fill="url(#hullMain)"/>
+
+        <!-- terracotta waterline stripe -->
+        <path d="M18 114 Q 40 104 80 104 L 258 106 Q 272 106 270 112 L 267 116 Q 230 126 140 130 Q 60 128 22 120 Z"
+              fill="url(#stripe)" opacity=".95"/>
+
+        <!-- plank lines -->
+        <path d="M24 120 Q 140 136 260 118" stroke="#1a0f08" stroke-width=".6" fill="none" opacity=".7"/>
+        <path d="M24 116 Q 140 128 262 114" stroke="#f4d9b0" stroke-width=".4" fill="none" opacity=".3"/>
+
+        <!-- Deck -->
+        <path d="M28 96 L 254 98 L 252 102 L 30 100 Z" fill="#1a120a"/>
+        <!-- deck plank lines -->
+        <path d="M50 99 L 60 99 M 80 99 L 90 99 M 110 99 L 118 99 M 200 99 L 210 99 M 230 99 L 240 99"
+              stroke="#f4d9b0" stroke-width=".3" opacity=".25"/>
+
+        <!-- Wheelhouse / cabin -->
+        <g>
+          <!-- cabin body -->
+          <path d="M100 62
+                   L 100 96
+                   L 188 96
+                   L 188 62
+                   Q 188 56 182 56
+                   L 106 56
+                   Q 100 56 100 62 Z" fill="url(#cabin)"/>
+          <!-- cabin outline -->
+          <path d="M100 62 L 100 96 M 188 62 L 188 96" stroke="#6a4a2a" stroke-width=".6" opacity=".6"/>
+          <!-- Roof -->
+          <path d="M96 56 L 192 56 L 196 52 L 92 52 Z" fill="url(#roof)"/>
+          <path d="M92 52 L 196 52" stroke="#1a0f08" stroke-width=".8"/>
+
+          <!-- Windows (lit cabin, warm glow) -->
+          <rect x="108" y="64" width="20" height="14" rx="1" fill="#ffd58e" opacity=".85"/>
+          <rect x="132" y="64" width="20" height="14" rx="1" fill="#ffd58e" opacity=".85"/>
+          <rect x="156" y="64" width="20" height="14" rx="1" fill="#ffcf80" opacity=".7"/>
+          <!-- window frames -->
+          <rect x="108" y="64" width="20" height="14" rx="1" fill="none" stroke="#3a2014" stroke-width=".6"/>
+          <rect x="132" y="64" width="20" height="14" rx="1" fill="none" stroke="#3a2014" stroke-width=".6"/>
+          <rect x="156" y="64" width="20" height="14" rx="1" fill="none" stroke="#3a2014" stroke-width=".6"/>
+          <!-- cabin door -->
+          <rect x="140" y="82" width="12" height="14" fill="#1a1008" stroke="#3a2014" stroke-width=".4"/>
+          <circle cx="149" cy="90" r=".7" fill="#ffd58e"/>
+
+          <!-- Small chimney -->
+          <rect x="170" y="44" width="5" height="12" fill="#1a1008"/>
+          <rect x="169" y="42" width="7" height="3"  fill="#2a1a10"/>
+          <!-- smoke -->
+          <circle cx="174" cy="36" r="2.5" fill="#e4d5c0" opacity=".45"/>
+          <circle cx="178" cy="30" r="3"   fill="#e4d5c0" opacity=".3"/>
+          <circle cx="184" cy="23" r="3.5" fill="#e4d5c0" opacity=".2"/>
+        </g>
+
+        <!-- Bow rail -->
+        <path d="M234 96 L 234 88 L 256 92 L 256 98" fill="none" stroke="#1a1008" stroke-width="1"/>
+
+        <!-- MAST + rigging -->
+        <line x1="134" y1="52" x2="134" y2="8" stroke="#1a0f08" stroke-width="1.8"/>
+        <!-- crossbar -->
+        <line x1="118" y1="16" x2="152" y2="16" stroke="#1a0f08" stroke-width="1"/>
+        <!-- rigging lines -->
+        <line x1="134" y1="8"  x2="98"  y2="52" stroke="#1a0f08" stroke-width=".5" opacity=".8"/>
+        <line x1="134" y1="8"  x2="190" y2="52" stroke="#1a0f08" stroke-width=".5" opacity=".8"/>
+        <line x1="118" y1="16" x2="106" y2="52" stroke="#1a0f08" stroke-width=".4" opacity=".6"/>
+        <line x1="152" y1="16" x2="178" y2="52" stroke="#1a0f08" stroke-width=".4" opacity=".6"/>
+        <!-- Hanging fishing net (draped between boom and deck) -->
+        <g stroke="#2a1f14" stroke-width=".35" fill="none" opacity=".75">
+          <path d="M118 16 Q 112 38 104 58"/>
+          <path d="M124 16 Q 120 38 116 58"/>
+          <path d="M130 16 Q 128 38 128 58"/>
+          <path d="M152 16 Q 156 38 162 58"/>
+          <path d="M146 16 Q 148 38 150 58"/>
+          <path d="M104 24 Q 128 26 162 24"/>
+          <path d="M104 36 Q 128 38 162 36"/>
+          <path d="M104 48 Q 128 50 162 48"/>
+        </g>
+        <!-- floats on net -->
+        <circle cx="104" cy="52" r="1.3" fill="#d76a3a"/>
+        <circle cx="116" cy="52" r="1.3" fill="#f4d9b0"/>
+        <circle cx="150" cy="52" r="1.3" fill="#d76a3a"/>
+        <circle cx="162" cy="52" r="1.3" fill="#f4d9b0"/>
+
+        <!-- ===== FISHERMAN 1 — on bow, casting rod ===== -->
+        <g transform="translate(220,78)">
+          <!-- legs (dark trousers) -->
+          <rect x="-4" y="8" width="3" height="14" fill="#1f2a36"/>
+          <rect x="1"  y="8" width="3" height="14" fill="#1f2a36"/>
+          <!-- boots -->
+          <rect x="-5" y="20" width="5" height="3" fill="#0f1820"/>
+          <rect x="0"  y="20" width="5" height="3" fill="#0f1820"/>
+          <!-- torso (orange waterproof jacket) -->
+          <path d="M-7 -3 Q 0 -6 7 -3 L 8 12 L -8 12 Z" fill="#d85a2e"/>
+          <!-- jacket shading -->
+          <path d="M-7 -3 Q -2 -4 0 12 L -8 12 Z" fill="#0a1218" opacity=".2"/>
+          <!-- jacket zip -->
+          <line x1="0" y1="-4" x2="0" y2="11" stroke="#f4d9b0" stroke-width=".3" opacity=".7"/>
+          <!-- arm forward (holding rod) -->
+          <path d="M5 -2 L 18 -12 L 20 -10 L 7 0 Z" fill="#d85a2e"/>
+          <!-- hand -->
+          <circle cx="19" cy="-11" r="1.5" fill="#e8c4a0"/>
+          <!-- back arm -->
+          <path d="M-6 -1 L -10 6 L -8 8 L -4 2 Z" fill="#d85a2e"/>
+          <!-- neck -->
+          <rect x="-1.5" y="-6" width="3" height="3" fill="#e8c4a0"/>
+          <!-- head -->
+          <circle cx="0" cy="-9" r="3.6" fill="#e8c4a0"/>
+          <!-- face shadow -->
+          <path d="M-3 -9 Q 0 -7 3 -9 L 3 -8 Q 0 -6 -3 -8 Z" fill="#0a1218" opacity=".1"/>
+          <!-- beard hint -->
+          <path d="M-2.5 -7.5 Q 0 -6 2.5 -7.5" stroke="#3a2014" stroke-width=".4" fill="none"/>
+          <!-- eye -->
+          <circle cx="1" cy="-10" r=".4" fill="#1a0f08"/>
+          <!-- fisherman's yellow hat -->
+          <path d="M-5 -11 Q 0 -15 5 -11 L 5 -10 L -5 -10 Z" fill="#f4c64a"/>
+          <path d="M-6 -10 L 6 -10 L 5 -9 L -5 -9 Z" fill="#d9a830"/>
+          <!-- FISHING ROD -->
+          <line x1="20" y1="-10" x2="54" y2="-30" stroke="#4a2a18" stroke-width="1.2" stroke-linecap="round"/>
+          <!-- reel -->
+          <circle cx="22" cy="-11" r="1.8" fill="#1a0f08"/>
+          <!-- line from tip down to water -->
+          <path d="M54 -30 Q 58 -10 56 22" stroke="#f4ecd8" stroke-width=".3" fill="none" opacity=".75"/>
+          <!-- bobber -->
+          <circle cx="56" cy="22" r="1.6" fill="#d9452a"/>
+          <circle cx="56" cy="22" r="1.6" fill="none" stroke="#f4ecd8" stroke-width=".4"/>
+          <!-- water ripple around bobber -->
+          <ellipse cx="56" cy="23" rx="5" ry="1" fill="none" stroke="#ffe1bd" stroke-width=".3" opacity=".5"/>
+        </g>
+
+        <!-- ===== FISHERMAN 2 — amidships, hauling net ===== -->
+        <g transform="translate(60,80)">
+          <rect x="-4" y="8" width="3" height="12" fill="#1a2a38"/>
+          <rect x="1"  y="8" width="3" height="12" fill="#1a2a38"/>
+          <rect x="-5" y="18" width="5" height="2.5" fill="#0f1820"/>
+          <rect x="0"  y="18" width="5" height="2.5" fill="#0f1820"/>
+          <!-- blue sweater torso, slightly bent forward -->
+          <path d="M-7 -2 Q 0 -6 7 -3 L 8 12 L -8 12 Z" fill="#2d5a7a"/>
+          <path d="M-7 -2 Q -2 -3 0 12 L -8 12 Z" fill="#0a1218" opacity=".22"/>
+          <!-- arms pulling down -->
+          <path d="M-6 -1 L -14 10 L -11 12 L -3 2 Z" fill="#2d5a7a"/>
+          <path d="M6 -1 L 14 10 L 11 12 L 3 2 Z" fill="#2d5a7a"/>
+          <!-- hands -->
+          <circle cx="-13" cy="10" r="1.4" fill="#e8c4a0"/>
+          <circle cx="13"  cy="10" r="1.4" fill="#e8c4a0"/>
+          <!-- neck -->
+          <rect x="-1.5" y="-5" width="3" height="3" fill="#e8c4a0"/>
+          <!-- head -->
+          <circle cx="0" cy="-8" r="3.4" fill="#e8c4a0"/>
+          <circle cx="-1" cy="-9" r=".4" fill="#1a0f08"/>
+          <!-- blue captain cap -->
+          <path d="M-4.5 -10 Q 0 -13 4.5 -10 L 4.5 -9 L -4.5 -9 Z" fill="#1a2a38"/>
+          <path d="M-5.5 -9 L 5.5 -9 L 4.5 -8 L -4.5 -8 Z" fill="#0f1820"/>
+          <!-- brim highlight -->
+          <line x1="-5" y1="-8.5" x2="5" y2="-8.5" stroke="#f4d9b0" stroke-width=".2" opacity=".5"/>
+          <!-- net in hands (V shape) -->
+          <path d="M-13 10 L -6 4 L 6 4 L 13 10" stroke="#2a1f14" stroke-width=".7" fill="none"/>
+          <path d="M-12 11 Q -8 14 -4 16 M -8 11 Q -6 14 -2 16 M -4 11 Q -2 14 0 16 M 4 11 Q 2 14 0 16 M 8 11 Q 6 14 2 16 M 12 11 Q 8 14 4 16" stroke="#2a1f14" stroke-width=".3" fill="none" opacity=".7"/>
+          <!-- fish in net -->
+          <ellipse cx="-2" cy="15" rx="3" ry="1.2" fill="#6a8a9a"/>
+          <ellipse cx="3"  cy="16" rx="2.5" ry="1" fill="#8aa0ac"/>
+        </g>
+
+        <!-- tiny seagull on mast -->
+        <path d="M128 9 Q 131 7 134 9 Q 137 7 140 9" stroke="#f6ecd6" stroke-width=".8" fill="none" opacity=".85"/>
+
+        <!-- Bow & stern wake -->
+        <path d="M258 110 Q 274 112 280 108" stroke="rgba(255,230,190,.65)" stroke-width="1.2" fill="none"/>
+        <path d="M255 115 Q 272 118 280 114" stroke="rgba(255,230,190,.35)" stroke-width=".6" fill="none"/>
+        <path d="M22 110 Q 6 112 -2 108"    stroke="rgba(255,230,190,.5)"  stroke-width=".9" fill="none"/>
+      </svg>
+    </div>
+
+    <div class="specks" id="specks" aria-hidden="true"></div>
+    <div class="motes" id="motes" aria-hidden="true"></div>
+
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- CHROME -->
+    <div class="chrome">
+      <div class="top">
+        <header class="brand">
+          <div class="mark">D</div>
+          <div class="wordmark">Delmata Travel</div>
+        </header>
+        <section class="message">
+          <div class="eyebrow">Under maintenance</div>
+          <h1 class="headline">
+            A quiet moment on the coast — <em>we will be back with you soon.</em>
+          </h1>
+          <p class="sub">
+            Our website is taking a short pause for regular maintenance. The Adriatic is not. Reach out any time and we will plan your private journey through Croatia.
+          </p>
+          <div class="since" role="note" aria-label="Maintenance began">
+            <span class="pulse" aria-hidden="true"></span>
+            <span class="k">Maintenance since</span>
+            <span class="v">23 April 2026</span>
+          </div>
+        </section>
+      </div>
+
+      <aside class="contact" aria-label="Contact">
+        <div class="label">Get in touch</div>
+        <a href="mailto:info@delmata-travel.hr">info@delmata-travel.hr</a>
+        <a href="tel:+385917924122">+385 91 792 4122</a>
+      </aside>
+    </div>
+
+    <footer class="legal">
+      <div class="row">
+        <span><span class="dot"></span>Delmata Travel j.d.o.o.</span>
+        <span><span class="k">Address</span>&nbsp; Prve Poljanice 7, Zagreb</span>
+      </div>
+      <div class="row">
+        <span><span class="k">OIB</span>&nbsp; 21858494377</span>
+        <span><span class="k">IBAN</span>&nbsp; HR83 2340 0091 1107 2788 7</span>
+      </div>
+    </footer>
+  </main>
+
+<script>
+/* ========================================================================
+   CURSOR-DRIVEN SUN POSITION + SKY SHADES
+   Mouse at TOP  = sun high, brighter golden palette (early sunset).
+   Mouse at BOT  = sun low,  deeper amber palette (late sunset).
+   ======================================================================== */
+(() => {
+  const stage = document.getElementById('stage');
+  const root  = document.documentElement;
+
+  // Two palettes: HIGH sun (early) and LOW sun (late).
+  // u=0 -> HIGH, u=1 -> LOW. Mix linearly per channel.
+  const HIGH = {
+    sky1:[246,226,198], sky2:[239,200,166], sky3:[230,163,130],
+    horizon:[207,138,111],
+    sea1:[29,91,106],   sea2:[15,61,76],    sea3:[10,42,54],  sea4:[6,26,36],
+    sunY: 30,
+  };
+  const LOW = {
+    sky1:[248,208,160], sky2:[234,158,112], sky3:[207,110,82],
+    horizon:[168,76,60],
+    sea1:[36,70,88],    sea2:[18,46,64],    sea3:[10,28,40],  sea4:[4,14,22],
+    sunY: 56,
+  };
+
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function lerpC(a,b,t){
+    return `rgb(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))})`;
+  }
+
+  function apply(u){
+    // clamp
+    u = Math.max(0, Math.min(1, u));
+    root.style.setProperty('--sky-1',   lerpC(HIGH.sky1, LOW.sky1, u));
+    root.style.setProperty('--sky-2',   lerpC(HIGH.sky2, LOW.sky2, u));
+    root.style.setProperty('--sky-3',   lerpC(HIGH.sky3, LOW.sky3, u));
+    root.style.setProperty('--horizon', lerpC(HIGH.horizon, LOW.horizon, u));
+    root.style.setProperty('--sea-1',   lerpC(HIGH.sea1, LOW.sea1, u));
+    root.style.setProperty('--sea-2',   lerpC(HIGH.sea2, LOW.sea2, u));
+    root.style.setProperty('--sea-3',   lerpC(HIGH.sea3, LOW.sea3, u));
+    root.style.setProperty('--sea-4',   lerpC(HIGH.sea4, LOW.sea4, u));
+    const y = lerp(HIGH.sunY, LOW.sunY, u);
+    root.style.setProperty('--sun-y', y + '%');
+  }
+
+  // Initial neutral
+  apply(0.35);
+
+  let target = 0.35, current = 0.35;
+  stage.addEventListener('pointermove', (e)=>{
+    const r = stage.getBoundingClientRect();
+    const ny = (e.clientY - r.top) / r.height; // 0 top -> 1 bottom
+    target = ny;
+  });
+
+  // smooth interpolate
+  function frame(){
+    current += (target - current) * 0.06;
+    apply(current);
+    requestAnimationFrame(frame);
+  }
+  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if(!mq.matches) requestAnimationFrame(frame);
+})();
+
+/* ========================================================================
+   SEA — multi-band Gerstner-inspired swells
+   ======================================================================== */
+(() => {
+  const c = document.getElementById('sea');
+  const ctx = c.getContext('2d');
+  let W, H, DPR;
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = c.clientWidth; H = c.clientHeight;
+    c.width = W * DPR; c.height = H * DPR;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  resize(); window.addEventListener('resize', resize);
+
+  const BANDS = 10;
+  const palette = ['#d5a07f','#b78874','#8c7a7c','#527686','#326e82','#1c5d72','#0f485c','#093848','#062a38','#041e28'];
+  const bands = [];
+  for(let i=0;i<BANDS;i++){
+    const t = i/(BANDS-1);
+    const amp = 1.4 + t*t*14;
+    const wl  = 120 + t*260;
+    const sp  = 0.10 + t*0.55;
+    bands.push({
+      y: Math.pow(t,1.35)*100,
+      amp, wl, sp, color: palette[i],
+      oct: [
+        {k:2*Math.PI/wl,      a:amp*.60, sp:sp*1.0, ph:Math.random()*6.28},
+        {k:2*Math.PI/(wl*.5), a:amp*.28, sp:sp*1.55, ph:Math.random()*6.28},
+        {k:2*Math.PI/(wl*.22),a:amp*.12, sp:sp*2.3,  ph:Math.random()*6.28},
+      ]
+    });
+  }
+  function surface(b,x,t){
+    let y = b.y*H/100;
+    for(const o of b.oct) y += Math.sin(x*o.k + o.ph + t*o.sp*0.06) * o.a;
+    return y;
+  }
+
+  let t=0;
+  function frame(){
+    t++;
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<BANDS;i++){
+      const b=bands[i], next=bands[i+1];
+      const step=3;
+      ctx.beginPath();
+      let first=true;
+      for(let x=0;x<=W;x+=step){
+        const y=surface(b,x,t);
+        if(first){ ctx.moveTo(x,y); first=false;} else ctx.lineTo(x,y);
+      }
+      if(next){
+        for(let x=W;x>=0;x-=step) ctx.lineTo(x, surface(next,x,t));
+      } else { ctx.lineTo(W,H+2); ctx.lineTo(0,H+2); }
+      ctx.closePath();
+      ctx.fillStyle = b.color;
+      ctx.fill();
+
+      if(i>=2 && i<=BANDS-2){
+        ctx.lineWidth=1; ctx.strokeStyle='rgba(255,225,180,1)';
+        let pen=false; ctx.beginPath();
+        const SUN_CX = W*0.5;
+        const SUN_W  = Math.min(W*0.26, 320);
+        for(let x=0;x<=W;x+=step){
+          const y=surface(b,x,t)-.6;
+          const dx=Math.abs(x-SUN_CX);
+          const f=Math.max(0, 1-dx/SUN_W);
+          const slope=surface(b,x+step,t)-surface(b,x,t);
+          const crest=Math.max(0,-slope)*.8;
+          const a=0.38*f*(1-Math.abs(i-BANDS*.45)/BANDS)*(0.5+crest);
+          if(a>0.02){
+            ctx.globalAlpha=Math.min(.6,a);
+            if(!pen){ ctx.moveTo(x,y); pen=true; } else ctx.lineTo(x,y);
+          } else if(pen){ ctx.stroke(); ctx.beginPath(); pen=false; }
+        }
+        if(pen) ctx.stroke();
+        ctx.globalAlpha=1;
+      }
+    }
+    ctx.strokeStyle='rgba(255,225,190,.35)'; ctx.lineWidth=1;
+    ctx.beginPath();
+    for(let x=0;x<=W;x+=3){
+      const y=surface(bands[0],x,t)-.4;
+      if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    requestAnimationFrame(frame);
+  }
+  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if(!mq.matches) requestAnimationFrame(frame); else frame();
+})();
+
+/* ========================================================================
+   DOLPHINS — proper silhouettes, leaping arcs
+   ======================================================================== */
+(() => {
+  const c = document.getElementById('dolphins');
+  const ctx = c.getContext('2d');
+  let W, H, DPR;
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = c.clientWidth; H = c.clientHeight;
+    c.width = W * DPR; c.height = H * DPR;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  resize(); window.addEventListener('resize', resize);
+
+  function makePod(){
+    const cfgs = [
+      { baseY: 0.62, size: 32, dir:+1, delay:  800, gap: 5200 },
+      { baseY: 0.62, size: 28, dir:+1, delay: 1800, gap: 5200 },
+      { baseY: 0.78, size: 48, dir:-1, delay: 4000, gap: 7800 },
+      { baseY: 0.92, size: 64, dir:+1, delay: 9000, gap: 11000 },
+    ];
+    return cfgs.map(cfg => ({
+      ...cfg, state:'wait',
+      t0: performance.now() + cfg.delay,
+      arcDur: 2200, arcW: 220, arcH: 50,
+      xStart: 0, xEnd: 0,
+    }));
+  }
+  const pods = makePod();
+
+  /* Bottlenose dolphin — head to RIGHT at +X.
+     Uses scale(-1,1) when direction is left so anatomy stays correct. */
+  function drawDolphin(x, y, rot, size, dir){
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    const s = size/80;
+    ctx.scale(s, s);
+    if(dir < 0) ctx.scale(-1, 1);     // face left without inverting belly/back
+
+    // Subtle underwater shadow below
+    ctx.fillStyle = 'rgba(0,10,18,.25)';
+    ctx.beginPath();
+    ctx.ellipse(-4, 18, 28, 3, 0, 0, 6.28);
+    ctx.fill();
+
+    // ===== BODY =====
+    // Dolphin body: long streamlined, head (melon) rising at right, sloping
+    // down to narrow peduncle and horizontal flukes at left.
+    const bodyGrad = ctx.createLinearGradient(0, -14, 0, 12);
+    bodyGrad.addColorStop(0,   '#22394a');   // dark dorsal
+    bodyGrad.addColorStop(0.4, '#355469');
+    bodyGrad.addColorStop(0.7, '#7a949f');
+    bodyGrad.addColorStop(1,   '#cfd9dc');   // pale belly
+
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    // rostrum (beak) tip
+    ctx.moveTo(40, 4);
+    // upper beak line
+    ctx.quadraticCurveTo(36, 2, 32, 1);
+    // melon bulge (forehead)
+    ctx.quadraticCurveTo(28, -2, 24, -6);
+    ctx.quadraticCurveTo(18, -9, 10, -10);
+    // back curve
+    ctx.quadraticCurveTo(-4, -10, -18, -7);
+    ctx.quadraticCurveTo(-30, -5, -38, -3);
+    // narrow peduncle approaching tail
+    ctx.quadraticCurveTo(-44, -1.5, -46, 0);
+    // belly side of peduncle
+    ctx.quadraticCurveTo(-44, 1.5, -38, 2);
+    ctx.quadraticCurveTo(-24, 4, -10, 6);
+    // belly forward toward chin
+    ctx.quadraticCurveTo(6, 8, 20, 7);
+    ctx.quadraticCurveTo(28, 6, 34, 5.5);
+    // under-beak
+    ctx.quadraticCurveTo(38, 5, 40, 4);
+    ctx.closePath();
+    ctx.fill();
+
+    // Darker back shading line
+    ctx.strokeStyle = 'rgba(8,18,28,.55)';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(34, -0.5);
+    ctx.quadraticCurveTo(22, -8, 8, -9);
+    ctx.quadraticCurveTo(-10, -9, -26, -6);
+    ctx.quadraticCurveTo(-38, -3.5, -44, -1.5);
+    ctx.stroke();
+
+    // ===== TAIL FLUKES (horizontal, like a cetacean) =====
+    // two lobes with center notch
+    ctx.fillStyle = '#1a2c3a';
+    ctx.beginPath();
+    ctx.moveTo(-40, -1);
+    ctx.quadraticCurveTo(-56, -10, -62, -6);
+    ctx.quadraticCurveTo(-54, -2, -48, 0);  // notch
+    ctx.quadraticCurveTo(-54, 2, -62, 6);
+    ctx.quadraticCurveTo(-56, 10, -40, 1.5);
+    ctx.closePath();
+    ctx.fill();
+    // fluke highlight line
+    ctx.strokeStyle = 'rgba(255,225,180,.25)';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(-44, -2); ctx.quadraticCurveTo(-54, -6, -58, -6);
+    ctx.moveTo(-44, 2);  ctx.quadraticCurveTo(-54, 6, -58, 6);
+    ctx.stroke();
+
+    // ===== DORSAL FIN — falcate, curved back =====
+    ctx.fillStyle = '#1a2c3a';
+    ctx.beginPath();
+    ctx.moveTo(-4, -8);
+    ctx.quadraticCurveTo(-6, -22, 4, -20);
+    ctx.quadraticCurveTo(12, -16, 12, -8);
+    ctx.closePath();
+    ctx.fill();
+    // dorsal highlight
+    ctx.fillStyle = 'rgba(255,225,180,.2)';
+    ctx.beginPath();
+    ctx.moveTo(-2, -10);
+    ctx.quadraticCurveTo(-3, -18, 3, -18);
+    ctx.quadraticCurveTo(6, -14, 4, -10);
+    ctx.closePath();
+    ctx.fill();
+
+    // ===== PECTORAL FIN (near side) =====
+    ctx.fillStyle = '#1a2c3a';
+    ctx.beginPath();
+    ctx.moveTo(8, 6);
+    ctx.quadraticCurveTo(6, 14, -4, 13);
+    ctx.quadraticCurveTo(0, 9, 4, 7);
+    ctx.closePath();
+    ctx.fill();
+
+    // ===== BEAK / ROSTRUM detail =====
+    // mouth line
+    ctx.strokeStyle = 'rgba(10,18,26,.7)';
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    ctx.moveTo(30, 3);
+    ctx.quadraticCurveTo(36, 4, 40, 4);
+    ctx.stroke();
+    // beak crease (where beak meets melon)
+    ctx.beginPath();
+    ctx.moveTo(30, 1.5);
+    ctx.quadraticCurveTo(30, 4, 32, 5);
+    ctx.stroke();
+
+    // ===== EYE =====
+    ctx.fillStyle = '#0a1218';
+    ctx.beginPath(); ctx.arc(26, -3, 1.2, 0, 6.28); ctx.fill();
+    ctx.fillStyle = 'rgba(255,240,210,.95)';
+    ctx.beginPath(); ctx.arc(26.4, -3.5, 0.4, 0, 6.28); ctx.fill();
+
+    // ===== BLOWHOLE =====
+    ctx.fillStyle = 'rgba(10,18,26,.7)';
+    ctx.beginPath(); ctx.ellipse(18, -9.2, 1, 0.5, 0, 0, 6.28); ctx.fill();
+
+    // ===== Wet sheen highlight along back =====
+    ctx.fillStyle = 'rgba(255,235,200,.18)';
+    ctx.beginPath();
+    ctx.moveTo(28, -4);
+    ctx.quadraticCurveTo(10, -8, -10, -8);
+    ctx.quadraticCurveTo(-26, -6, -36, -4);
+    ctx.quadraticCurveTo(-26, -5, -10, -6.5);
+    ctx.quadraticCurveTo(10, -6.5, 28, -3);
+    ctx.closePath();
+    ctx.fill();
+
+    // Water droplets trailing from skin
+    ctx.fillStyle = 'rgba(255,235,200,.7)';
+    [[6,-14,.6],[-4,-16,.4],[14,-18,.5],[-14,-14,.4]].forEach(([dx,dy,r])=>{
+      ctx.beginPath(); ctx.arc(dx,dy,r,0,6.28); ctx.fill();
+    });
+
+    ctx.restore();
+  }
+
+  function drawSplash(x,y,age){
+    const r = 4 + age*22;
+    ctx.save();
+    ctx.globalAlpha = (1-age)*0.7;
+    ctx.strokeStyle = 'rgba(255,230,190,.85)';
+    ctx.lineWidth = 1.1;
+    ctx.beginPath(); ctx.ellipse(x,y,r,r*0.35,0,0,6.28); ctx.stroke();
+    ctx.globalAlpha = (1-age)*0.45;
+    ctx.beginPath(); ctx.ellipse(x,y,r*.6,r*0.22,0,0,6.28); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,230,190,.8)';
+    for(let i=0;i<6;i++){
+      const a = (i/6)*Math.PI + Math.PI;
+      const rr = r*1.1;
+      ctx.globalAlpha = (1-age)*0.7;
+      ctx.beginPath();
+      ctx.arc(x+Math.cos(a)*rr, y+Math.sin(a)*rr*0.35 - age*6, 1.1, 0, 6.28);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  const splashes = [];
+  function tick(now){
+    ctx.clearRect(0,0,W,H);
+
+    for(let i=splashes.length-1;i>=0;i--){
+      const s=splashes[i]; const age=(now-s.t0)/s.dur;
+      if(age>=1){ splashes.splice(i,1); continue; }
+      drawSplash(s.x,s.y,age);
+    }
+
+    for(const p of pods){
+      if(p.state==='wait'){
+        if(now>=p.t0){
+          p.state='arc'; p.t0=now;
+          const f = 0.12 + Math.random()*0.72;
+          p.xStart = (p.dir===+1 ? f-0.05 : f+0.05) * W;
+          p.xEnd   = p.xStart + p.dir * p.arcW;
+          p.arcDur = 1900 + Math.random()*1000;
+          p.arcH = 36 + Math.random()*28;
+          p._entered = false;
+        }
+      }
+      if(p.state==='arc'){
+        const u = (now-p.t0)/p.arcDur;
+        if(u>=1){
+          splashes.push({x:p.xEnd, y:p.baseY*H, t0:now, dur:700});
+          p.state='wait'; p.t0 = now + p.gap + Math.random()*2200;
+          continue;
+        }
+        const x = p.xStart + (p.xEnd-p.xStart)*u;
+        const y = p.baseY*H - Math.sin(Math.PI*u)*p.arcH;
+        const dx = (p.xEnd-p.xStart)/p.arcDur;
+        const dy = -Math.cos(Math.PI*u)*Math.PI*p.arcH/p.arcDur;
+        const rot = Math.atan2(dy, Math.abs(dx));  // rotation along arc (magnitude)
+        if(u<0.06 && !p._entered){
+          splashes.push({x:p.xStart, y:p.baseY*H, t0:now, dur:650});
+          p._entered = true;
+        }
+        if(u>0.3) p._entered = false;
+        drawDolphin(x, y, rot, p.size, p.dir);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if(!mq.matches) requestAnimationFrame(tick); else tick(performance.now());
+})();
+
+/* Specks */
+(() => {
+  const host = document.getElementById('specks');
+  for(let i=0;i<38;i++){
+    const s=document.createElement('div'); s.className='spk';
+    const g=(Math.random()+Math.random())/2;
+    const x=(g*40+30), y=2+Math.random()*60;
+    const size=(1.5+Math.random()*3).toFixed(1);
+    const dur=(2.2+Math.random()*3.4).toFixed(2);
+    const delay=(Math.random()*6).toFixed(2);
+    s.style.cssText=`left:${x}%;top:${y}%;width:${size}px;height:${size}px;animation:twinkle ${dur}s ease-in-out ${delay}s infinite`;
+    host.appendChild(s);
+  }
+  const kf=document.createElement('style');
+  kf.textContent=`@keyframes twinkle{0%,100%{opacity:0;transform:scale(.6)}50%{opacity:.95;transform:scale(1.2)}}`;
+  document.head.appendChild(kf);
+})();
+
+/* Motes */
+(() => {
+  const host = document.getElementById('motes');
+  for(let i=0;i<22;i++){
+    const m=document.createElement('div'); m.className='mote';
+    m.style.left=(Math.random()*100)+'%';
+    m.style.top=(40+Math.random()*55)+'%';
+    m.style.animationDuration=(10+Math.random()*12).toFixed(1)+'s';
+    m.style.animationDelay=(Math.random()*14).toFixed(1)+'s';
+    host.appendChild(m);
+  }
+})();
+
+/* Island parallax still responds to horizontal mouse */
+(() => {
+  const stage = document.getElementById('stage');
+  const isls = document.querySelectorAll('.islands svg');
+  stage.addEventListener('pointermove', (e)=>{
+    const r = stage.getBoundingClientRect();
+    const nx = (e.clientX - r.width/2) / r.width;
+    isls.forEach((el,i)=>{ el.style.translate = `${nx*-(i+1)*3}px 0`; });
+  });
+})();
+</script>
+</body>
+</html>
